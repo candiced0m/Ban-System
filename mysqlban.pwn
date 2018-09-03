@@ -147,4 +147,33 @@ CMD:unban(playerid, params[])
 	cache_delete(result);
 	return 1;
 }
+CMD:baninfo(playerid, params[])
+{
+	if(!IsPlayerAdmin(playerid)) return SendClientMessage(playerid, -1, "SERVER: You are not authorized to use that command.");
+	new name[MAX_PLAYER_NAME], query[300], rows;
+	if(sscanf(params, "s[24]", name)) return SendClientMessage(playerid, -1, "USAGE: /baninfo [username]");
+	mysql_format(Database, query, sizeof(query), "SELECT * FROM `bans` where `Username` = '%e' LIMIT 0, 1", name);
+	new Cache:result = mysql_query(Database, query);
+	cache_get_row_count(rows);
+
+	if(!rows)
+	{
+	    SendClientMessage(playerid, -1, "SERVER: That name does not exist or there is no ban under that name.");
+	}
+
+	for (new i = 0; i < rows; i ++)
+	{
+		new Username[24], BannedBy[24], BanReason[24], BanID;
+		cache_get_value_name(0, "Username", Username);
+		cache_get_value_name(0, "BannedBy", BannedBy);
+		cache_get_value_name(0, "BanReason", BanReason);
+		cache_get_value_name_int(0, "BanID", BanID);
+
+		new string[500];
+		format(string, sizeof(string), "{FFFFFF}Checking ban information on user: {9D00AB}%s\n\n{FFFFFF}Username: {9D00AB}%s\n{FFFFFF}Banned By: {9D00AB}%s\n{FFFFFF}Ban Reason: {9D00AB}%s\n{FFFFFF}Ban ID: {9D00AB}%i\n\n{FFFFFF}Type /unban [name] if you want to unban this user.", name, Username, BannedBy, BanReason, BanID);
+		Dialog_Show(playerid, DIALOG_BANCHECK, DIALOG_STYLE_MSGBOX, "{FFFFFF}Ban Information", string, "Close", "");
+	}
+	cache_delete(result);
+	return 1;
+}
 #endif
