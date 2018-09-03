@@ -8,11 +8,16 @@
 
 #if defined FILTERSCRIPT
 
+#define MYSQL_HOST      "hostname"
+#define MYSQL_USER      "username"
+#define MYSQL_DATABASE  "database"
+#define MYSQL_PASS      "password"
+
 new MySQL: Database;
 
 public OnFilterScriptInit()
 {
-    /*new MySQLOpt: option_id = mysql_init_options();
+    new MySQLOpt: option_id = mysql_init_options();
 	mysql_set_option(option_id, AUTO_RECONNECT, true);
 	Database = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS, MYSQL_DATABASE, option_id);
 	if(Database == MYSQL_INVALID_HANDLE || mysql_errno(Database) != 0)
@@ -22,7 +27,7 @@ public OnFilterScriptInit()
 		return 1;
 	}
 	else
-		print("Connection to MySQL database was successful.");*/
+		print("Connection to MySQL database was successful.");
 		
  	print("\n--------------------------------------");
 	print("Ban / Unban system by willbedie (MySQL)");
@@ -38,7 +43,7 @@ public OnFilterScriptExit()
 public OnPlayerConnect(playerid)
 {
 	new query[100];
-    mysql_format(Database, query, sizeof(query), "SELECT * FROM `bans` WHERE (`User`='%e');", GetName(playerid));
+    mysql_format(Database, query, sizeof(query), "SELECT * FROM `bans` WHERE (`Username`='%e');", GetName(playerid));
 	mysql_tquery(Database, query, "CheckPlayer", "d", playerid); // Check if the player is banned
 	return 1;
 }
@@ -128,7 +133,7 @@ CMD:unban(playerid, params[])
 	
  	for (new i = 0; i < rows; i ++)
 	{
-	    mysql_format(Database, query, sizeof(query), "DELETE FROM `bans` WHERE User = '%e'", name);
+	    mysql_format(Database, query, sizeof(query), "DELETE FROM `bans` WHERE Username = '%e'", name);
 	    mysql_tquery(Database, query);
      	for(new x; x < MAX_PLAYERS; x++)
      	{
