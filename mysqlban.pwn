@@ -46,7 +46,7 @@ public OnFilterScriptInit()
 	else
 		print("Connection to MySQL database was successful.");
 		
-    mysql_query(Database, "CREATE TABLE IF NOT EXISTS bans(`BanID` int(10) AUTO_INCREMENT, `Username` VARCHAR(70) NOT NULL, `BannedBy` VARCHAR(70) NOT NULL, `BanReason` VARCHAR(70) NOT NULL, `IpAddress` VARCHAR(17) NOT NULL");
+    mysql_query(Database, "CREATE TABLE IF NOT EXISTS bans(`BanID` int(10) AUTO_INCREMENT PRIMARY KEY, `Username` VARCHAR(70) NOT NULL, `BannedBy` VARCHAR(70) NOT NULL, `BanReason` VARCHAR(70) NOT NULL, `IpAddress` VARCHAR(17) NOT NULL");
 		
  	print("\n--------------------------------------");
 	print("Ban / Unban system by willbedie (MySQL)");
