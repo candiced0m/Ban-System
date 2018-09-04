@@ -46,7 +46,7 @@ public OnFilterScriptInit()
 	else
 		print("Connection to MySQL database was successful.");
 		
-    mysql_query(Database, "CREATE TABLE IF NOT EXISTS bans(`BanID` int(10) AUTO_INCREMENT PRIMARY KEY, `Username` VARCHAR(70) NOT NULL, `BannedBy` VARCHAR(70) NOT NULL, `BanReason` VARCHAR(70) NOT NULL, `IpAddress` VARCHAR(17) NOT NULL");
+    mysql_query(Database, "CREATE TABLE IF NOT EXISTS bans(`BanID` int(10) AUTO_INCREMENT PRIMARY KEY, `Username` VARCHAR(24) NOT NULL, `BannedBy` VARCHAR(24) NOT NULL, `BanReason` VARCHAR(128) NOT NULL, `IpAddress` VARCHAR(17) NOT NULL");
 		
  	print("\n--------------------------------------");
 	print("Ban / Unban system by willbedie (MySQL)");
@@ -62,7 +62,7 @@ public OnFilterScriptExit()
 public OnPlayerConnect(playerid)
 {
 	new query[100];
-    mysql_format(Database, query, sizeof(query), "SELECT * FROM `bans` WHERE (`Username`='%e');", GetName(playerid));
+    mysql_format(Database, query, sizeof(query), "SELECT * FROM `bans` WHERE `Username` = '%e';", GetName(playerid));
 	mysql_tquery(Database, query, "CheckPlayer", "d", playerid); // Check if the player is banned
 	return 1;
 }
@@ -72,7 +72,7 @@ public CheckPlayer(playerid)
 {
 	if(cache_num_rows() != 0) // If the player is currently banned.
 	{
-	    new Username[24], BannedBy[24], BanReason[70];
+	    new Username[24], BannedBy[24], BanReason[128];
 	    cache_get_value_name(0, "Username", Username); // Retreive the username from the mysql database
 	    cache_get_value_name(0, "BannedBy", BannedBy); // Retreive the admin's name from the mysql database
 	    cache_get_value_name(0, "BanReason", BanReason); // Retreive the ban reason from the mysql database
@@ -120,10 +120,10 @@ CMD:ban(playerid, params[])
     if(!IsPlayerAdmin(playerid)) return SendClientMessage(playerid, -1, "SERVER: You are not authorized to use that command."); // If the player is not logged into rcon
     
 	new PlayerIP[17];
-	new giveplayerid, reason[70], string[150], query[150];
+	new giveplayerid, reason[128], string[150], query[150];
 	GetPlayerIp(giveplayerid, PlayerIP, sizeof(PlayerIP)); // We are going to get the target's IP with this.
 	
-	if(sscanf(params, "us[70]", giveplayerid, reason)) return SendClientMessage(playerid, -1, "USAGE: /ban [playerid] [reason]"); // This will show the usage of the command after the player types /ban
+	if(sscanf(params, "us[128]", giveplayerid, reason)) return SendClientMessage(playerid, -1, "USAGE: /ban [playerid] [reason]"); // This will show the usage of the command after the player types /ban
 	if(!IsPlayerConnected(giveplayerid)) return SendClientMessage(playerid, -1, "That player is not connected"); // If the target is not connected.
 	
 	mysql_format(Database, query, sizeof(query), "INSERT INTO `bans` (`Username`, `BannedBy`, `BanReason`, `IpAddress`) VALUES ('%e', '%e', '%e', '%e')", GetName(giveplayerid), GetName(playerid), reason, PlayerIP);
@@ -140,7 +140,7 @@ CMD:unban(playerid, params[])
 	if(!IsPlayerAdmin(playerid)) return SendClientMessage(playerid, -1, "SERVER: You are not authorized to use that command.");
 	
 	new name[MAX_PLAYER_NAME], query[150], string[150], rows;
-	if(sscanf(params, "s[70]", name)) return SendClientMessage(playerid, -1, "USAGE: /unban [name]"); // This will show the usage of the command if the player types only /unban.
+	if(sscanf(params, "s[128]", name)) return SendClientMessage(playerid, -1, "USAGE: /unban [name]"); // This will show the usage of the command if the player types only /unban.
 	mysql_format(Database, query, sizeof(query), "SELECT * FROM `bans` WHERE `Username` = '%e' LIMIT 0, 1", name);
 	new Cache:result = mysql_query(Database, query);
 	cache_get_row_count(rows);
@@ -169,9 +169,9 @@ CMD:unban(playerid, params[])
 CMD:oban(playerid, params[])
 {
 	if(!IsPlayerAdmin(playerid)) return SendClientMessage(playerid, -1, "SERVER: You are not authorized to use that command.");
-	new name[MAX_PLAYER_NAME], reason[70], query[300], string[100], rows;
-	if(sscanf(params, "s[24]s[70]", name, reason)) return SendClientMessage(playerid, -1, "USAGE: /oban [username] [reason]");
-	mysql_format(Database, query, sizeof(query), "SELECT `Username` FROM `users` WHERE `Username` = '%e' LIMIT 0,1", name);
+	new name[MAX_PLAYER_NAME], reason[128], query[300], string[100], rows;
+	if(sscanf(params, "s[24]s[128]", name, reason)) return SendClientMessage(playerid, -1, "USAGE: /oban [username] [reason]");
+	mysql_format(Database, query, sizeof(query), "SELECT `BanID` FROM `bans` WHERE `Username` = '%e' LIMIT 0,1", name);
 	new Cache:result = mysql_query(Database, query);
 	cache_get_row_count(rows);
 
