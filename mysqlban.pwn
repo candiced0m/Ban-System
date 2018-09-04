@@ -1,3 +1,20 @@
+/*
+ _                                          _
+( )                                        ( )_
+| |_      _ _   ___       ___  _   _   ___ | ,_)   __    ___ ___
+| '_`\  /'_` )/' _ `\   /',__)( ) ( )/',__)| |   /'__`\/' _ ` _ `\
+| |_) )( (_| || ( ) |   \__, \| (_) |\__, \| |_ (  ___/| ( ) ( ) |
+(_,__/'`\__,_)(_) (_)   (____/`\__, |(____/`\__)`\____)(_) (_) (_)
+                              ( )_| |
+                              `\___/'
+
+Advanced Ban / Unban system by willbedie.
+Commands: /ban, /unban, /baninfo, /oban
+Version: V0.2
+Credits: Y_Less, SA-MP, Zeex, maddinat0r, BlueG, Emmet, willbedie
+Last Updated: 9/4/2018 - 2:21 PM
+MySQL Version: R41-4*/
+
 #define FILTERSCRIPT
 
 #include <a_samp>
@@ -143,6 +160,30 @@ CMD:unban(playerid, params[])
 				SendClientMessage(x, -1, string);
 	        }
 	    }
+	}
+	cache_delete(result);
+	return 1;
+}
+CMD:oban(playerid, params[])
+{
+	if(!IsPlayerAdmin(playerid)) return SendClientMessage(playerid, -1, "SERVER: You are not authorized to use that command.");
+	new name[MAX_PLAYER_NAME], reason[70], query[300], string[100], rows;
+	if(sscanf(params, "s[24]s[70]", name, reason)) return SendClientMessage(playerid, -1, "USAGE: /oban [username] [reason]");
+	mysql_format(Database, query, sizeof(query), "SELECT `Username` FROM `users` WHERE `Username` = '%e' LIMIT 0,1", name);
+	new Cache:result = mysql_query(Database, query);
+	cache_get_row_count(rows);
+
+	if(!rows)
+	{
+	    SendClientMessage(playerid, -1, "SERVER: That name does not exist or there is no ban under that name.");
+	}
+	
+	for (new i = 0; i < rows; i ++)
+	{
+		mysql_format(Database, query, sizeof(query), "INSERT INTO `bans` (`Username`, `BannedBy`, `BanReason`) VALUES ('%e', '%e', '%e')", name, GetName(playerid), reason);
+		mysql_tquery(Database, query);
+		format(string, sizeof(string), "AdmCmd: {FF0000}%s has been offline-banned by %s, Reason: %s", name, GetName(playerid), reason);
+		SendClientMessageToAll(-1, string);
 	}
 	cache_delete(result);
 	return 1;
