@@ -46,7 +46,7 @@ public OnFilterScriptInit()
 	else
 		print("Connection to MySQL database was successful.");
 		
-    mysql_query(Database, "CREATE TABLE IF NOT EXISTS bans(`BanID` int(10) AUTO_INCREMENT PRIMARY KEY, `Username` VARCHAR(24) NOT NULL, `BannedBy` VARCHAR(24) NOT NULL, `BanReason` VARCHAR(128) NOT NULL, `IpAddress` VARCHAR(17) NOT NULL");
+    mysql_query(Database, "CREATE TABLE IF NOT EXISTS bans(`BanID` int(10) AUTO_INCREMENT PRIMARY KEY, `Username` VARCHAR(24) NOT NULL, `BannedBy` VARCHAR(24) NOT NULL, `BanReason` VARCHAR(128) NOT NULL, `IpAddress` VARCHAR(17) NOT NULL, `Date` VARCHAR(15) NOT NULL");
 		
  	print("\n--------------------------------------");
 	print("Ban / Unban system by willbedie (MySQL)");
@@ -72,14 +72,15 @@ public CheckPlayer(playerid)
 {
 	if(cache_num_rows() != 0) // If the player is currently banned.
 	{
-	    new Username[24], BannedBy[24], BanReason[128];
+	    new Username[24], BannedBy[24], BanReason[128], Date[20];
 	    cache_get_value_name(0, "Username", Username); // Retreive the username from the mysql database
 	    cache_get_value_name(0, "BannedBy", BannedBy); // Retreive the admin's name from the mysql database
 	    cache_get_value_name(0, "BanReason", BanReason); // Retreive the ban reason from the mysql database
+	    cache_get_value_name(0, "Date", Date);
 
 	    SendClientMessage(playerid, -1, "{D93D3D}You are banned from this server."); // Send a message to the player to tell him he's banned
 	    new string[500];
-	    format(string, sizeof(string), "{FFFFFF}You are banned from this server\n{D93D3D}Username: {FFFFFF}%s\n{D93D3D}Banned by: {FFFFFF}%s\n{D93D3D}Ban Reason: {FFFFFF}%s", Username, BannedBy, BanReason);
+	    format(string, sizeof(string), "{FFFFFF}You are banned from this server\n{D93D3D}Username: {FFFFFF}%s\n{D93D3D}Banned by: {FFFFFF}%s\n{D93D3D}Ban Reason: {FFFFFF}%s\n{D93D3D}Date: {FFFFFF}%s", Username, BannedBy, BanReason, Date);
 	    Dialog_Show(playerid, DIALOG_BANNED, DIALOG_STYLE_MSGBOX, "Ban Info", string, "Close", "");  // Show this dialog to the player.
 	    SetTimerEx("SendToKick", 400, false, "i", playerid); // Kick the player in 400 miliseconds.
 	}
@@ -115,6 +116,33 @@ GetName(playerid)
 	return Name;
 }
 
+stock ReturnDate()
+{
+	new sendString[90], MonthStr[40], month, day, year;
+	new hour, minute, second;
+
+	gettime(hour, minute, second);
+	getdate(year, month, day);
+	switch(month)
+	{
+	    case 1:  MonthStr = "January";
+	    case 2:  MonthStr = "February";
+	    case 3:  MonthStr = "March";
+	    case 4:  MonthStr = "April";
+	    case 5:  MonthStr = "May";
+	    case 6:  MonthStr = "June";
+	    case 7:  MonthStr = "July";
+	    case 8:  MonthStr = "August";
+	    case 9:  MonthStr = "September";
+	    case 10: MonthStr = "October";
+	    case 11: MonthStr = "November";
+	    case 12: MonthStr = "December";
+	}
+
+	format(sendString, 90, "%s %d, %d %02d:%02d:%02d", MonthStr, day, year, hour, minute, second);
+	return sendString;
+}
+
 CMD:ban(playerid, params[])
 {
     if(!IsPlayerAdmin(playerid)) return SendClientMessage(playerid, -1, "SERVER: You are not authorized to use that command."); // If the player is not logged into rcon
@@ -126,7 +154,7 @@ CMD:ban(playerid, params[])
 	if(sscanf(params, "us[128]", giveplayerid, reason)) return SendClientMessage(playerid, -1, "USAGE: /ban [playerid] [reason]"); // This will show the usage of the command after the player types /ban
 	if(!IsPlayerConnected(giveplayerid)) return SendClientMessage(playerid, -1, "That player is not connected"); // If the target is not connected.
 	
-	mysql_format(Database, query, sizeof(query), "INSERT INTO `bans` (`Username`, `BannedBy`, `BanReason`, `IpAddress`) VALUES ('%e', '%e', '%e', '%e')", GetName(giveplayerid), GetName(playerid), reason, PlayerIP);
+	mysql_format(Database, query, sizeof(query), "INSERT INTO `bans` (`Username`, `BannedBy`, `BanReason`, `IpAddress`, `Date`) VALUES ('%e', '%e', '%e', '%e'), '%e'", GetName(giveplayerid), GetName(playerid), reason, PlayerIP, ReturnDate());
 	mysql_tquery(Database, query, "", ""); // This will insert the information into the bans table.
 
 	format(string, sizeof(string), "SERVER: %s[%d] was banned by %s, Reason: %s", GetName(giveplayerid), giveplayerid, GetName(playerid), reason); // This message will be sent to every player online.
@@ -182,7 +210,7 @@ CMD:oban(playerid, params[])
 	
 	for (new i = 0; i < rows; i ++)
 	{
-		mysql_format(Database, query, sizeof(query), "INSERT INTO `bans` (`Username`, `BannedBy`, `BanReason`) VALUES ('%e', '%e', '%e')", name, GetName(playerid), reason);
+		mysql_format(Database, query, sizeof(query), "INSERT INTO `bans` (`Username`, `BannedBy`, `BanReason`, `Date`) VALUES ('%e', '%e', '%e', '%e')", name, GetName(playerid), reason, ReturnDate());
 		mysql_tquery(Database, query);
 		format(string, sizeof(string), "AdmCmd: {FF0000}%s has been offline-banned by %s, Reason: %s", name, GetName(playerid), reason);
 		SendClientMessageToAll(-1, string);
@@ -206,14 +234,15 @@ CMD:baninfo(playerid, params[])
 
 	for (new i = 0; i < rows; i ++)
 	{
-		new Username[24], BannedBy[24], BanReason[24], BanID;
+		new Username[24], BannedBy[24], BanReason[24], BanID, Date[30];
 		cache_get_value_name(0, "Username", Username);
 		cache_get_value_name(0, "BannedBy", BannedBy);
 		cache_get_value_name(0, "BanReason", BanReason);
 		cache_get_value_name_int(0, "BanID", BanID);
+		cache_get_value_name(0, "Date", Date);
 
 		new string[500];
-		format(string, sizeof(string), "{FFFFFF}Checking ban information on user: {9D00AB}%s\n\n{FFFFFF}Username: {9D00AB}%s\n{FFFFFF}Banned By: {9D00AB}%s\n{FFFFFF}Ban Reason: {9D00AB}%s\n{FFFFFF}Ban ID: {9D00AB}%i\n\n{FFFFFF}Type /unban [name] if you want to unban this user.", name, Username, BannedBy, BanReason, BanID);
+		format(string, sizeof(string), "{FFFFFF}Checking ban information on user: {9D00AB}%s\n\n{FFFFFF}Username: {9D00AB}%s\n{FFFFFF}Banned By: {9D00AB}%s\n{FFFFFF}Ban Reason: {9D00AB}%s\n{FFFFFF}Ban ID: {9D00AB}%i\n{FFFFFF}Date: {9D00AB}%s\n\n{FFFFFF}Type /unban [name] if you want to unban this user.", name, Username, BannedBy, BanReason, BanID, Date);
 		Dialog_Show(playerid, DIALOG_BANCHECK, DIALOG_STYLE_MSGBOX, "{FFFFFF}Ban Information", string, "Close", "");
 	}
 	cache_delete(result);
