@@ -46,6 +46,8 @@ public OnFilterScriptInit()
 	else
 		print("Connection to MySQL database was successful.");
 		
+    mysql_tquery(Database, "CREATE TABLE IF NOT EXISTS bans(`BanID` int(10) AUTO_INCREMENT NOT NULL, `Username` VARCHAR(70) NOT NULL, `BannedBy` VARCHAR(70) NOT NULL, `BanReason` VARCHAR(70) NOT NULL, `IpAddress` VARCHAR(17) NOT NULL);");
+		
  	print("\n--------------------------------------");
 	print("Ban / Unban system by willbedie (MySQL)");
 	print("--------------------------------------\n");
@@ -175,7 +177,7 @@ CMD:oban(playerid, params[])
 
 	if(!rows)
 	{
-	    SendClientMessage(playerid, -1, "SERVER: That name does not exist.");
+	    SendClientMessage(playerid, -1, "SERVER: That name does not exist or there is no ban under that name.");
 	}
 	
 	for (new i = 0; i < rows; i ++)
