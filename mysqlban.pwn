@@ -171,13 +171,13 @@ CMD:oban(playerid, params[])
 	if(!IsPlayerAdmin(playerid)) return SendClientMessage(playerid, -1, "SERVER: You are not authorized to use that command.");
 	new name[MAX_PLAYER_NAME], reason[128], query[300], string[100], rows;
 	if(sscanf(params, "s[24]s[128]", name, reason)) return SendClientMessage(playerid, -1, "USAGE: /oban [username] [reason]");
-	mysql_format(Database, query, sizeof(query), "SELECT `BanID` FROM `bans` WHERE `Username` = '%e' LIMIT 0,1", name);
+	mysql_format(Database, query, sizeof(query), "SELECT `Username` FROM `users` WHERE `Username` = '%e' LIMIT 0,1", name);
 	new Cache:result = mysql_query(Database, query);
 	cache_get_row_count(rows);
 
 	if(!rows)
 	{
-	    SendClientMessage(playerid, -1, "SERVER: That name does not exist or there is no ban under that name.");
+	    SendClientMessage(playerid, -1, "SERVER: That name does not exist.");
 	}
 	
 	for (new i = 0; i < rows; i ++)
