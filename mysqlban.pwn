@@ -175,7 +175,7 @@ CMD:oban(playerid, params[])
 
 	if(!rows)
 	{
-	    SendClientMessage(playerid, -1, "SERVER: That name does not exist or there is no ban under that name.");
+	    SendClientMessage(playerid, -1, "SERVER: That name does not exist.");
 	}
 	
 	for (new i = 0; i < rows; i ++)
