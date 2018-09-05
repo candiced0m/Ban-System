@@ -46,7 +46,7 @@ public OnFilterScriptInit()
 	else
 		print("Connection to MySQL database was successful.");
 		
-    mysql_query(Database, "CREATE TABLE IF NOT EXISTS bans(`BanID` int(10) AUTO_INCREMENT PRIMARY KEY, `Username` VARCHAR(24) NOT NULL, `BannedBy` VARCHAR(24) NOT NULL, `BanReason` VARCHAR(128) NOT NULL, `IpAddress` VARCHAR(17) NOT NULL, `Date` VARCHAR(30) NOT NULL");
+    mysql_query(Database, "CREATE TABLE IF NOT EXISTS bans(`BanID` int(10) AUTO_INCREMENT PRIMARY KEY, `Username` VARCHAR(24) NOT NULL, `BannedBy` VARCHAR(24) NOT NULL, `BanReason` VARCHAR(128) NOT NULL, `IpAddress` VARCHAR(17) NOT NULL, `Date` VARCHAR(30) NOT NULL);");
 		
  	print("\n--------------------------------------");
 	print("Ban / Unban system by willbedie (MySQL)");
@@ -154,7 +154,7 @@ CMD:ban(playerid, params[])
 	if(sscanf(params, "us[128]", giveplayerid, reason)) return SendClientMessage(playerid, -1, "USAGE: /ban [playerid] [reason]"); // This will show the usage of the command after the player types /ban
 	if(!IsPlayerConnected(giveplayerid)) return SendClientMessage(playerid, -1, "That player is not connected"); // If the target is not connected.
 	
-	mysql_format(Database, query, sizeof(query), "INSERT INTO `bans` (`Username`, `BannedBy`, `BanReason`, `IpAddress`, `Date`) VALUES ('%e', '%e', '%e', '%e'), '%e'", GetName(giveplayerid), GetName(playerid), reason, PlayerIP, ReturnDate());
+	mysql_format(Database, query, sizeof(query), "INSERT INTO `bans` (`Username`, `BannedBy`, `BanReason`, `IpAddress`, `Date`) VALUES ('%e', '%e', '%e', '%e', '%e')", GetName(giveplayerid), GetName(playerid), reason, PlayerIP, ReturnDate());
 	mysql_tquery(Database, query, "", ""); // This will insert the information into the bans table.
 
 	format(string, sizeof(string), "SERVER: %s[%d] was banned by %s, Reason: %s", GetName(giveplayerid), giveplayerid, GetName(playerid), reason); // This message will be sent to every player online.
